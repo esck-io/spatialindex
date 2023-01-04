@@ -3,7 +3,7 @@ package spatialindex
 import "testing"
 
 func TestAddInsertsNodeIntoValues(t *testing.T) {
-	sut := newTile[any]()
+	sut := &tile[any]{}
 	node := &Node[any]{}
 
 	sut.add(node)
@@ -20,7 +20,7 @@ func TestAddInsertsNodeIntoValues(t *testing.T) {
 }
 
 func TestRemoveRemovesNodeFromValues(t *testing.T) {
-	sut := newTile[any]()
+	sut := &tile[any]{}
 	node := &Node[any]{}
 	sut.add(node)
 
@@ -34,8 +34,8 @@ func TestRemoveRemovesNodeFromValues(t *testing.T) {
 }
 
 func TestTransferAddsToDestinationAndRemovesFromSelf(t *testing.T) {
-	sutSrc := newTile[any]()
-	sutDst := newTile[any]()
+	sutSrc := &tile[any]{}
+	sutDst := &tile[any]{}
 	node := &Node[any]{}
 	sutSrc.add(node)
 
@@ -58,7 +58,7 @@ func TestTransferAddsToDestinationAndRemovesFromSelf(t *testing.T) {
 }
 
 func TestValuesAreImmutable(t *testing.T) {
-	sut := newTile[any]()
+	sut := &tile[any]{}
 	node := &Node[any]{}
 
 	res := sut.values()
@@ -68,3 +68,18 @@ func TestValuesAreImmutable(t *testing.T) {
 		t.Errorf("expected value set to have %d values, but had %d values", 0, len(res))
 	}
 }
+
+func benchmarkCreateN(count int, b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		sut := &tile[any]{}
+
+		for i := 0; i < count; i++ {
+			node := &Node[any]{}
+			sut.add(node)
+		}
+	}
+}
+
+func BenchmarkCreate1(b *testing.B)  { benchmarkCreateN(1, b) }
+func BenchmarkCreate5(b *testing.B)  { benchmarkCreateN(5, b) }
+func BenchmarkCreate10(b *testing.B) { benchmarkCreateN(10, b) }

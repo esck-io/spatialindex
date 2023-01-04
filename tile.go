@@ -1,6 +1,10 @@
 package spatialindex
 
+import "sync"
+
 type Node[T any] struct {
+	pos      [3]float64
+	prevTile tileId
 }
 
 type nodeTransfer[T any] struct {
@@ -13,16 +17,22 @@ type tile[T any] struct {
 	transfer chan nodeTransfer[T]
 	delete   chan *Node[T]
 	read     chan []*Node[T]
+	init     sync.Once
 }
 
-func newTile[T any]() *tile[T] {
-	t := &tile[T]{make(chan *Node[T]), make(chan nodeTransfer[T]), make(chan *Node[T]), make(chan []*Node[T])}
-	go t.run()
-	return t
+func (t *tile[T]) initialize() {
+	t.init.Do(func() {
+		t.create = make(chan *Node[T])
+		t.transfer = make(chan nodeTransfer[T])
+		t.delete = make(chan *Node[T])
+		t.read = make(chan []*Node[T])
+
+		go t.run()
+	})
 }
 
 func (t *tile[T]) run() {
-	data := []*Node[T]{}
+	data := make([]*Node[T], 0, 1)
 	immut := []*Node[T]{}
 
 	for {
@@ -36,6 +46,7 @@ func (t *tile[T]) run() {
 			immut = clone(data)
 
 		case nt := <-t.transfer:
+			nt.t.initialize()
 			nt.t.create <- nt.n
 			data = deleteNode(data, nt.n)
 			immut = clone(data)
@@ -46,18 +57,22 @@ func (t *tile[T]) run() {
 }
 
 func (t *tile[T]) add(n *Node[T]) {
+	t.initialize()
 	t.create <- n
 }
 
 func (t *tile[T]) remove(n *Node[T]) {
+	t.initialize()
 	t.delete <- n
 }
 
 func (t *tile[T]) transferTo(n *Node[T], other *tile[T]) {
+	t.initialize()
 	t.transfer <- nodeTransfer[T]{n, other}
 }
 
 func (t *tile[T]) values() []*Node[T] {
+	t.initialize()
 	return <-t.read
 }
 
