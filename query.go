@@ -2,44 +2,44 @@ package spatialindex
 
 import "github.com/ungerik/go3d/float64/vec3"
 
-type SphereQuery[T any] struct {
+type SphereQuerier[T any] struct {
 	Center [3]float64
 	Radius float64
 }
 
-func (q *SphereQuery[T]) ListTiles(tileSize float64) []tileId {
+func (q *SphereQuerier[T]) ListTiles(tileSize float64) []tileId {
 
 	return tilesInRadius(tileSize, q.Center, q.Radius)
 }
 
-func (q *SphereQuery[T]) Contains(n *Node[T]) bool {
+func (q *SphereQuerier[T]) Contains(n *Node[T]) bool {
 	var cVec vec3.T = q.Center
 	var nVec vec3.T = n.pos
 
-	return vec3.Distance(&cVec, &nVec) < q.Radius
+	return vec3.Distance(&cVec, &nVec) <= q.Radius
 }
 
-type CylinderQuery[T any] struct {
-	Center [3]float64
-	Radius float64
-	Top    float64
-	Bottom float64
+type CylinderQuerier[T any] struct {
+	Center       [3]float64
+	Radius       float64
+	TopOffset    float64
+	BottomOffset float64
 }
 
-func (q *CylinderQuery[T]) ListTiles(tileSize float64) []tileId {
+func (q *CylinderQuerier[T]) ListTiles(tileSize float64) []tileId {
 
 	return tilesInRadius(tileSize, q.Center, q.Radius)
 }
 
-func (q *CylinderQuery[T]) Contains(n *Node[T]) bool {
+func (q *CylinderQuerier[T]) Contains(n *Node[T]) bool {
 	var cVec vec3.T = q.Center
 	cVec[1] = 0
 	var nVec vec3.T = n.pos
 	nVec[1] = 0
 
-	return vec3.Distance(&cVec, &nVec) < q.Radius &&
-		n.pos[1] < q.Top &&
-		n.pos[1] > q.Bottom
+	return vec3.Distance(&cVec, &nVec) <= q.Radius &&
+		n.pos[1] <= q.Center[1]+q.TopOffset &&
+		n.pos[1] >= q.Center[1]+q.BottomOffset
 }
 
 func tilesInRadius(tileSize float64, center [3]float64, radius float64) []tileId {
