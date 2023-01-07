@@ -7,25 +7,25 @@ import (
 	"github.com/puzpuzpuz/xsync"
 )
 
-type tileId struct {
+type TileId struct {
 	x int
 	z int
 }
 
 type Querier[T any] interface {
-	ListTiles(tileSize float64) []tileId
+	ListTiles(tileSize float64) []TileId
 	Contains(*Node[T]) bool
 }
 
 type Index[T any] struct {
 	TileSize float64
-	tiles    *xsync.MapOf[tileId, *tile[T]]
+	tiles    *xsync.MapOf[TileId, *tile[T]]
 	init     sync.Once
 }
 
 func (i *Index[T]) initialize() {
 	i.init.Do(func() {
-		i.tiles = xsync.NewTypedMapOf[tileId, *tile[T]](func(id tileId) uint64 {
+		i.tiles = xsync.NewTypedMapOf[TileId, *tile[T]](func(id TileId) uint64 {
 			return uint64(31*id.x + id.z)
 		})
 	})
@@ -80,8 +80,8 @@ func (i *Index[T]) Query(q Querier[T], out []*Node[T]) []*Node[T] {
 	return out
 }
 
-func (i *Index[T]) tileFor(pos [3]float64) tileId {
-	return tileId{
+func (i *Index[T]) tileFor(pos [3]float64) TileId {
+	return TileId{
 		x: int(math.Floor(pos[0] / i.TileSize)),
 		z: int(math.Floor(pos[2] / i.TileSize)),
 	}

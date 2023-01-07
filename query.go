@@ -7,7 +7,7 @@ type SphereQuerier[T any] struct {
 	Radius float64
 }
 
-func (q *SphereQuerier[T]) ListTiles(tileSize float64) []tileId {
+func (q *SphereQuerier[T]) ListTiles(tileSize float64) []TileId {
 
 	return tilesInRadius(tileSize, q.Center, q.Radius)
 }
@@ -26,7 +26,7 @@ type CylinderQuerier[T any] struct {
 	BottomOffset float64
 }
 
-func (q *CylinderQuerier[T]) ListTiles(tileSize float64) []tileId {
+func (q *CylinderQuerier[T]) ListTiles(tileSize float64) []TileId {
 
 	return tilesInRadius(tileSize, q.Center, q.Radius)
 }
@@ -42,18 +42,18 @@ func (q *CylinderQuerier[T]) Contains(n *Node[T]) bool {
 		n.pos[1] >= q.Center[1]+q.BottomOffset
 }
 
-func tilesInRadius(tileSize float64, center [3]float64, radius float64) []tileId {
+func tilesInRadius(tileSize float64, center [3]float64, radius float64) []TileId {
 	xLow := int((center[0] - radius) / tileSize)
 	xHigh := int((center[0] + radius) / tileSize)
 	zLow := int((center[2] - radius) / tileSize)
 	zHigh := int((center[2] + radius) / tileSize)
 
 	numTiles := (xHigh - xLow) * (zHigh - zLow)
-	tiles := make([]tileId, 0, numTiles)
+	tiles := make([]TileId, 0, numTiles)
 
 	for x := xLow; x <= xHigh; x++ {
 		for z := zLow; z <= zHigh; z++ {
-			tiles = append(tiles, tileId{x, z})
+			tiles = append(tiles, TileId{x, z})
 		}
 	}
 	return tiles

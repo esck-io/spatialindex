@@ -6,7 +6,7 @@ import (
 
 type Node[T any] struct {
 	pos      [3]float64
-	prevTile tileId
+	prevTile TileId
 }
 
 type nodeTransfer[T any] struct {
