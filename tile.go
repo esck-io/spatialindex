@@ -94,6 +94,10 @@ func (t *tile[T]) transferTo(n *Node[T], other *tile[T]) {
 }
 
 func (t *tile[T]) values() []*Node[T] {
+	if t == nil {
+		return []*Node[T]{}
+	}
+
 	t.initialize()
 	return <-t.read
 }

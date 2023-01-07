@@ -32,6 +32,7 @@ func (i *Index[T]) initialize() {
 }
 
 func (i *Index[T]) Create(val T, pos [3]float64) *Node[T] {
+	i.initialize()
 	tileId := i.tileFor(pos)
 	n := &Node[T]{pos, tileId}
 
@@ -41,6 +42,7 @@ func (i *Index[T]) Create(val T, pos [3]float64) *Node[T] {
 }
 
 func (i *Index[T]) Update(n *Node[T], pos [3]float64) {
+	i.initialize()
 	oldTileId := n.prevTile
 	newTileId := i.tileFor(pos)
 
@@ -58,12 +60,14 @@ func (i *Index[T]) Update(n *Node[T], pos [3]float64) {
 }
 
 func (i *Index[T]) Remove(n *Node[T]) {
+	i.initialize()
 	oldTileId := n.prevTile
 	oldTile, _ := i.tiles.LoadOrStore(oldTileId, &tile[T]{})
 	oldTile.remove(n)
 }
 
 func (i *Index[T]) Query(q Querier[T], out []*Node[T]) []*Node[T] {
+	i.initialize()
 	tiles := q.ListTiles(i.TileSize)
 
 	for _, id := range tiles {
