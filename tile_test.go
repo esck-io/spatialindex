@@ -1,6 +1,9 @@
 package spatialindex
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestAddInsertsNodeIntoValues(t *testing.T) {
 	sut := &tile[any]{}
@@ -53,6 +56,38 @@ func TestTransferAddsToDestinationAndRemovesFromSelf(t *testing.T) {
 	}
 
 	if dstRes[0] != node {
+		t.Errorf("expected destination tile to contain test node")
+	}
+}
+
+func TestTransferDoesNotLockWhenTransferToSelf(t *testing.T) {
+	sut := &tile[any]{}
+	node := &Node[any]{}
+	sut.add(node)
+
+	done := make(chan struct{})
+	timeout := time.NewTimer(1 * time.Second)
+
+	go func() {
+		sut.transferTo(node, sut)
+		sut.values()
+		close(done)
+	}()
+
+	select {
+	case <-timeout.C:
+		t.Errorf("timed out waiting for transfer to complete")
+		return
+	case <-done:
+	}
+
+	res := sut.values()
+
+	if len(res) != 1 {
+		t.Errorf("expected tile to have %d values, but had %d values", 1, len(res))
+	}
+
+	if res[0] != node {
 		t.Errorf("expected destination tile to contain test node")
 	}
 }

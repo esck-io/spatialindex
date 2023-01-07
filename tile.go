@@ -8,22 +8,25 @@ type Node[T any] struct {
 }
 
 type nodeTransfer[T any] struct {
-	n *Node[T]
-	t *tile[T]
+	n  *Node[T]
+	t  *tile[T]
+	wg *sync.WaitGroup
 }
 
 type tile[T any] struct {
-	create   chan *Node[T]
-	transfer chan nodeTransfer[T]
-	delete   chan *Node[T]
-	read     chan []*Node[T]
-	init     sync.Once
+	create      chan *Node[T]
+	transferout chan nodeTransfer[T]
+	transferin  chan nodeTransfer[T]
+	delete      chan *Node[T]
+	read        chan []*Node[T]
+	init        sync.Once
 }
 
 func (t *tile[T]) initialize() {
 	t.init.Do(func() {
 		t.create = make(chan *Node[T])
-		t.transfer = make(chan nodeTransfer[T])
+		t.transferout = make(chan nodeTransfer[T])
+		t.transferin = make(chan nodeTransfer[T])
 		t.delete = make(chan *Node[T])
 		t.read = make(chan []*Node[T])
 
@@ -45,11 +48,31 @@ func (t *tile[T]) run() {
 			data = deleteNode(data, n)
 			immut = clone(data)
 
-		case nt := <-t.transfer:
+		case nt := <-t.transferout:
+			//don't try to transfer to itself - it will block forever
+			if nt.t == t {
+				continue
+			}
+
+			nt.wg.Add(1)
+
 			nt.t.initialize()
-			nt.t.create <- nt.n
+			nt.t.transferin <- nt
+
 			data = deleteNode(data, nt.n)
 			immut = clone(data)
+
+			nt.wg.Done()
+			nt.wg.Wait()
+
+		case nt := <-t.transferin:
+			nt.wg.Add(1)
+
+			data = append(data, nt.n)
+			immut = clone(data)
+
+			nt.wg.Done()
+			nt.wg.Wait()
 
 		case t.read <- immut:
 		}
@@ -68,7 +91,7 @@ func (t *tile[T]) remove(n *Node[T]) {
 
 func (t *tile[T]) transferTo(n *Node[T], other *tile[T]) {
 	t.initialize()
-	t.transfer <- nodeTransfer[T]{n, other}
+	t.transferout <- nodeTransfer[T]{n, other, &sync.WaitGroup{}}
 }
 
 func (t *tile[T]) values() []*Node[T] {
