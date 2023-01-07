@@ -44,6 +44,10 @@ func (i *Index[T]) Update(n *Node[T], pos [3]float64) {
 	oldTileId := n.prevTile
 	newTileId := i.tileFor(pos)
 
+	if oldTileId == newTileId {
+		return
+	}
+
 	oldTile, _ := i.tiles.LoadOrStore(oldTileId, &tile[T]{})
 	newTile, _ := i.tiles.LoadOrStore(newTileId, &tile[T]{})
 
