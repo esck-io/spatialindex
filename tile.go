@@ -1,6 +1,8 @@
 package spatialindex
 
-import "sync"
+import (
+	"sync"
+)
 
 type Node[T any] struct {
 	pos      [3]float64
@@ -9,7 +11,6 @@ type Node[T any] struct {
 
 type nodeTransfer[T any] struct {
 	n  *Node[T]
-	t  *tile[T]
 	wg *sync.WaitGroup
 }
 
@@ -49,16 +50,6 @@ func (t *tile[T]) run() {
 			immut = clone(data)
 
 		case nt := <-t.transferout:
-			//don't try to transfer to itself - it will block forever
-			if nt.t == t {
-				continue
-			}
-
-			nt.wg.Add(1)
-
-			nt.t.initialize()
-			nt.t.transferin <- nt
-
 			data = deleteNode(data, nt.n)
 			immut = clone(data)
 
@@ -66,8 +57,6 @@ func (t *tile[T]) run() {
 			nt.wg.Wait()
 
 		case nt := <-t.transferin:
-			nt.wg.Add(1)
-
 			data = append(data, nt.n)
 			immut = clone(data)
 
@@ -91,7 +80,17 @@ func (t *tile[T]) remove(n *Node[T]) {
 
 func (t *tile[T]) transferTo(n *Node[T], other *tile[T]) {
 	t.initialize()
-	t.transferout <- nodeTransfer[T]{n, other, &sync.WaitGroup{}}
+	other.initialize()
+
+	//don't transfer to self - this will cause a deadlock
+	if t == other {
+		return
+	}
+
+	transfer := nodeTransfer[T]{n, &sync.WaitGroup{}}
+	transfer.wg.Add(2)
+	t.transferout <- transfer
+	other.transferin <- transfer
 }
 
 func (t *tile[T]) values() []*Node[T] {
