@@ -34,7 +34,7 @@ func (i *Index[T]) initialize() {
 func (i *Index[T]) Create(val T, pos [3]float64) *Node[T] {
 	i.initialize()
 	tileId := i.tileFor(pos)
-	n := &Node[T]{pos, tileId}
+	n := &Node[T]{pos, tileId, val}
 
 	tile, _ := i.tiles.LoadOrStore(i.tileFor(pos), &tile[T]{})
 	tile.add(n)

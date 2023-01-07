@@ -59,7 +59,7 @@ func assertContainsTile(t *testing.T, tiles []TileId, expected TileId) {
 
 func TestSphereContainsReturnsTrueForSphereCenter(t *testing.T) {
 	p := [3]float64{100.0, 200.0, 300.0}
-	n := &Node[any]{p, TileId{}}
+	n := &Node[any]{p, TileId{}, nil}
 	sut := SphereQuerier[any]{[3]float64{100.0, 200.0, 300.0}, 50.0}
 
 	res := sut.Contains(n)
@@ -71,7 +71,7 @@ func TestSphereContainsReturnsTrueForSphereCenter(t *testing.T) {
 
 func TestSphereContainsReturnsTrueForPointInRadius(t *testing.T) {
 	p := [3]float64{110.0, 210.0, 310.0}
-	n := &Node[any]{p, TileId{}}
+	n := &Node[any]{p, TileId{}, nil}
 	sut := SphereQuerier[any]{[3]float64{100.0, 200.0, 300.0}, 50.0}
 
 	res := sut.Contains(n)
@@ -83,7 +83,7 @@ func TestSphereContainsReturnsTrueForPointInRadius(t *testing.T) {
 
 func TestSphereContainsReturnsFalseForPointOutsideRadius(t *testing.T) {
 	p := [3]float64{150.0, 250.0, 350.0}
-	n := &Node[any]{p, TileId{}}
+	n := &Node[any]{p, TileId{}, nil}
 	sut := SphereQuerier[any]{[3]float64{100.0, 200.0, 300.0}, 50.0}
 
 	res := sut.Contains(n)
@@ -95,7 +95,7 @@ func TestSphereContainsReturnsFalseForPointOutsideRadius(t *testing.T) {
 
 func TestSphereContainsReturnsTrueForPointOnSurface(t *testing.T) {
 	p := [3]float64{100.0, 200.0, 350.0}
-	n := &Node[any]{p, TileId{}}
+	n := &Node[any]{p, TileId{}, nil}
 	sut := SphereQuerier[any]{[3]float64{100.0, 200.0, 300.0}, 50.0}
 
 	res := sut.Contains(n)
@@ -107,7 +107,7 @@ func TestSphereContainsReturnsTrueForPointOnSurface(t *testing.T) {
 
 func TestCylinderContainsReturnsTrueForCylinderCenter(t *testing.T) {
 	p := [3]float64{100.0, 200.0, 300.0}
-	n := &Node[any]{p, TileId{}}
+	n := &Node[any]{p, TileId{}, nil}
 	sut := CylinderQuerier[any]{[3]float64{100.0, 200.0, 300.0}, 50.0, math.Inf(1), math.Inf(-1)}
 
 	res := sut.Contains(n)
@@ -119,7 +119,7 @@ func TestCylinderContainsReturnsTrueForCylinderCenter(t *testing.T) {
 
 func TestCylinderContainsReturnsTrueForPointInRadius(t *testing.T) {
 	p := [3]float64{110.0, 210.0, 310.0}
-	n := &Node[any]{p, TileId{}}
+	n := &Node[any]{p, TileId{}, nil}
 	sut := CylinderQuerier[any]{[3]float64{100.0, 200.0, 300.0}, 50.0, math.Inf(1), math.Inf(-1)}
 
 	res := sut.Contains(n)
@@ -131,7 +131,7 @@ func TestCylinderContainsReturnsTrueForPointInRadius(t *testing.T) {
 
 func TestCylinderContainsReturnsFalseForPointOutsideRadius(t *testing.T) {
 	p := [3]float64{150.0, 250.0, 350.0}
-	n := &Node[any]{p, TileId{}}
+	n := &Node[any]{p, TileId{}, nil}
 	sut := CylinderQuerier[any]{[3]float64{100.0, 200.0, 300.0}, 50.0, math.Inf(1), math.Inf(-1)}
 
 	res := sut.Contains(n)
@@ -143,7 +143,7 @@ func TestCylinderContainsReturnsFalseForPointOutsideRadius(t *testing.T) {
 
 func TestCylinderContainsReturnsFalseForPointAboveTop(t *testing.T) {
 	p := [3]float64{100.0, 400.0, 300.0}
-	n := &Node[any]{p, TileId{}}
+	n := &Node[any]{p, TileId{}, nil}
 	sut := CylinderQuerier[any]{[3]float64{100.0, 200.0, 300.0}, 50.0, 100, math.Inf(-1)}
 
 	res := sut.Contains(n)
@@ -155,7 +155,7 @@ func TestCylinderContainsReturnsFalseForPointAboveTop(t *testing.T) {
 
 func TestCylinderContainsReturnsFalseForPointBelowBottom(t *testing.T) {
 	p := [3]float64{150.0, -250.0, 350.0}
-	n := &Node[any]{p, TileId{}}
+	n := &Node[any]{p, TileId{}, nil}
 	sut := CylinderQuerier[any]{[3]float64{100.0, 200.0, 300.0}, 50.0, math.Inf(1), -100}
 
 	res := sut.Contains(n)
@@ -167,7 +167,7 @@ func TestCylinderContainsReturnsFalseForPointBelowBottom(t *testing.T) {
 
 func TestCylinderContainsReturnsTrueForPointOnSideSurface(t *testing.T) {
 	p := [3]float64{100.0, 10000.0, 350.0}
-	n := &Node[any]{p, TileId{}}
+	n := &Node[any]{p, TileId{}, nil}
 	sut := CylinderQuerier[any]{[3]float64{100.0, 200.0, 300.0}, 50.0, math.Inf(1), math.Inf(-1)}
 
 	res := sut.Contains(n)
@@ -179,7 +179,7 @@ func TestCylinderContainsReturnsTrueForPointOnSideSurface(t *testing.T) {
 
 func TestCylinderContainsReturnsTrueForPointOnTopSurface(t *testing.T) {
 	p := [3]float64{100.0, 300.0, 300.0}
-	n := &Node[any]{p, TileId{}}
+	n := &Node[any]{p, TileId{}, nil}
 	sut := CylinderQuerier[any]{[3]float64{100.0, 200.0, 300.0}, 50.0, 100, math.Inf(-1)}
 
 	res := sut.Contains(n)
@@ -191,7 +191,7 @@ func TestCylinderContainsReturnsTrueForPointOnTopSurface(t *testing.T) {
 
 func TestCylinderContainsReturnsTrueForPointOnBottomSurface(t *testing.T) {
 	p := [3]float64{100.0, 100.0, 300.0}
-	n := &Node[any]{p, TileId{}}
+	n := &Node[any]{p, TileId{}, nil}
 	sut := CylinderQuerier[any]{[3]float64{100.0, 200.0, 300.0}, 50.0, math.Inf(1), -100}
 
 	res := sut.Contains(n)
